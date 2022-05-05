@@ -1,0 +1,15 @@
+artifact_uri: ./mlruns/0/0e5d782ebab54585ba29913c8a29118e/artifacts
+end_time: 1651744265037
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: deleted
+name: ''
+run_id: 0e5d782ebab54585ba29913c8a29118e
+run_uuid: 0e5d782ebab54585ba29913c8a29118e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1651744264928
+status: 4
+tags: []
+user_id: AlexHP
