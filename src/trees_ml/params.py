@@ -8,16 +8,17 @@ import click
 def find_best_params(features_train, features_val):
     pipeline = Pipeline([
         ("scaler", StandardScaler()),
-        ("classifier",GradientBoostingClassifier())
+        ("classifier", GradientBoostingClassifier())
     ])
-    params = {
+
+    params_gbc ={
         'classifier__n_estimators': np.arange(50, 150,10),
         'classifier__max_depth': np.arange(1, 7),
         'classifier__learning_rate': [1,0.1,0.01],
-        'classifier__random_state': np.arange(35, 45),
+        'classifier__random_state': np.arange(35, 45)
     }
 
-    dtree_gscv = GridSearchCV(pipeline, params)
+    dtree_gscv = GridSearchCV(pipeline, params_gbc)
     dtree_gscv.fit(features_train, features_val)
     click.echo(f'GridSearchCV лучшие параметры:{dtree_gscv.best_params_}')
     return dtree_gscv.best_params_['classifier__n_estimators'],\

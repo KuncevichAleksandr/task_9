@@ -7,7 +7,7 @@ import mlflow
 import mlflow.sklearn
 from sklearn.metrics import accuracy_score
 from .pipeline import create_pipeline
-from params import find_best_params
+from .params import find_best_params
 
 @click.command()
 @click.option(
@@ -86,7 +86,7 @@ def train(
     with mlflow.start_run():
         if use_grid_search_cv:
             n_estimators, learning_rate, max_depth, random_state = find_best_params(features_train, features_val)
-        pipeline = create_pipeline(use_scaler, n_estimators, learning_rate, max_depth, random_state,use_grid_search_cv)
+        pipeline = create_pipeline(use_scaler, n_estimators, learning_rate, max_depth, random_state)
         pipeline.fit(features_train, target_train)
         accuracy = accuracy_score(target_val, pipeline.predict(features_val))
         mlflow.log_param("use_scaler", use_scaler)
