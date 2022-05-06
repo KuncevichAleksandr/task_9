@@ -59,6 +59,12 @@ from .pipeline import create_pipeline
     type=int,
     show_default=True,
 )
+@click.option(
+    "--grid-search-cv",
+    default=True,
+    type=bool,
+    show_default=True,
+)
 
 def train(
     dataset_path: Path,
@@ -68,7 +74,8 @@ def train(
     use_scaler: bool,
     n_estimators: int,
     learning_rate: float,
-    max_depth: int
+    max_depth: int,
+    grid_search_cv:bool
     ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
@@ -76,7 +83,7 @@ def train(
         test_split_ratio,
     )
     with mlflow.start_run():
-        pipeline = create_pipeline(use_scaler, n_estimators, learning_rate, max_depth, random_state)
+        pipeline = create_pipeline(use_scaler, n_estimators, learning_rate, max_depth, random_state,grid_search_cv)
         pipeline.fit(features_train, target_train)
         accuracy = accuracy_score(target_val, pipeline.predict(features_val))
         mlflow.log_param("use_scaler", use_scaler)
