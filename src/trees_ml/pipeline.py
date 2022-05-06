@@ -4,7 +4,11 @@ from sklearn.ensemble import GradientBoostingClassifier
 
 
 def create_pipeline(
-    use_scaler: bool, n_estimators: int, learning_rate: float,max_depth: int, random_state: int
+    use_scaler: bool,
+    n_estimators: int, 
+    learning_rate: float,
+    max_depth: int, 
+    random_state: int,
 ) -> Pipeline:
     pipeline_steps = []
     if use_scaler:
