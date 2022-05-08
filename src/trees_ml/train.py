@@ -62,7 +62,7 @@ from .params import find_best_params
 )
 @click.option(
     "--use-grid-search-cv",
-    default=True,
+    default=False,
     type=bool,
     show_default=True,
 )
@@ -85,7 +85,7 @@ def train(
     )
     with mlflow.start_run():
         if use_grid_search_cv:
-            n_estimators, learning_rate, max_depth, random_state = find_best_params(features_train, features_val)
+            n_estimators, learning_rate, max_depth, random_state = find_best_params(features_train, target_train)
         pipeline = create_pipeline(use_scaler, n_estimators, learning_rate, max_depth, random_state)
         pipeline.fit(features_train, target_train)
         accuracy = accuracy_score(target_val, pipeline.predict(features_val))
