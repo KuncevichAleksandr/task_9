@@ -21,4 +21,4 @@ poetry run mlflow ui
 ```
 
 ## Три разных набора гиперпараметров 
-![]()
+![](https://github.com/KuncevichAleksandr/trees_ml/blob/main/three_hyperparameters.png)
