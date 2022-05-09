@@ -19,3 +19,6 @@ poetry run train --help
 ```sh
 poetry run mlflow ui
 ```
+
+## Три разных набора гиперпараметров 
+![]()
