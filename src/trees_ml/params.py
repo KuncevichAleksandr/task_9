@@ -10,11 +10,22 @@ def find_best_params(models_array, features_train, target_train, cv_inner):
     click.echo(f'Начинается подбор параметров:')
     for model in models_array:
         if(type(model["classifier"]).__name__ == "GradientBoostingClassifier"):
-            params = {}
+            params = {
+                'classifier__n_estimators': np.arange(400, 600,100),
+                'classifier__max_depth': np.arange(9, 11),
+                'classifier__learning_rate': [0.1],
+                'classifier__random_state': [42]
+            }
         if(type(model["classifier"]).__name__ == "RandomForestClassifier"):
-            params = {}
+            params = {
+                'classifier__n_estimators': np.arange(400, 600,100),
+                'classifier__max_features': [2, 4, 6],
+                'classifier__max_depth': np.arange(9, 11),
+                'classifier__random_state': [42]
+            }
         model = GridSearchCV(model, params, scoring='accuracy', cv=cv_inner, refit=True)
         result = model.fit(features_train, target_train)
+        click.echo(f'{type(model["classifier"]).__name__} лучшие параметры:{result.best_params_}')
         model = result.best_estimator_
     return models_array
 
