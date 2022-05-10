@@ -78,7 +78,7 @@ from .ModelFactory import ModelFactory
 )
 @click.option(
     "--use-random-forest-classifier",
-    default=False,
+    default=True,
     type=bool,
     show_default=True,
 )
@@ -106,19 +106,21 @@ def train(
         if(not use_gradient_boosting_classifier and not use_random_forest_classifier):
             click.echo(f"No model selected")
             quit()
-
+            
         cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
         outer_results = list()
         for train_ix, test_ix in cv_outer.split(features):
             features_train, features_val, target_train, target_val = split_data(features,target,train_ix, test_ix)
             cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
             if use_grid_search_cv:
+                 models_array = find_best_params(models_array,features_train, target_train,cv_inner)
+            else:
+                for model in models_array:
+                    model = model.fit(features_train, target_train)
 
             for model in models_array:
-                result = model.fit(features_train, target_train)
-                print(result)
-        #         best_model = result.best_estimator_
-                yhat = result.predict(features_val)
+                yhat = model.predict(features_val)
+                print(type(model["classifier"]).__name__)
                 acc = accuracy_score(target_val, yhat)
                 outer_results.append(acc)
         print(outer_results)

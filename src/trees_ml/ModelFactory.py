@@ -8,4 +8,4 @@ class ModelFactory:
             return create_pipeline(use_scaler,GradientBoostingClassifier(**params))
         if(name == "RandomForestClassifier"):
             return create_pipeline(use_scaler,RandomForestClassifier(**params))
-        # self.models_array.append(GradientBoostingClassifier(random_state=42))
+
