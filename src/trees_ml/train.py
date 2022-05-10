@@ -78,7 +78,7 @@ from .ModelFactory import ModelFactory
 )
 @click.option(
     "--use-random-forest-classifier",
-    default=True,
+    default=False,
     type=bool,
     show_default=True,
 )
@@ -97,19 +97,28 @@ def train(
     use_random_forest_classifier:bool
     ) -> None:
     features,target = get_dataset(dataset_path)
-    models_name_array = []
+    models_array = []
     with mlflow.start_run():
         if(use_gradient_boosting_classifier):
-            models_name_array.append("GradientBoostingClassifier")
+            models_array.append(ModelFactory.buid("GradientBoostingClassifier"))
         if(use_random_forest_classifier):
-            models_name_array.append("RandomForestClassifier")
+            models_array.append(ModelFactory.buid("RandomForestClassifier"))
 
-        models_array = ModelFactory(models_name_array).models_array
         cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
+        outer_results = list()
         for train_ix, test_ix in cv_outer.split(features):
             features_train, features_val, target_train, target_val = split_data(features,target,train_ix, test_ix)
             cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
-            if use_grid_search_cv:
+            # if use_grid_search_cv:
+
+            for model in models_array:
+                result = model.fit(features_train, target_train)
+                print(result)
+        #         best_model = result.best_estimator_
+                yhat = result.predict(features_val)
+                acc = accuracy_score(target_val, yhat)
+                outer_results.append(acc)
+        print(outer_results)
 
         # if use_grid_search_cv:
         #     n_estimators, learning_rate, max_depth, random_state = find_best_params(features_train, target_train)
