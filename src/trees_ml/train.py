@@ -2,14 +2,16 @@ from pathlib import Path
 import click
 from joblib import dump
 from sklearn.metrics import log_loss
+from sklearn.model_selection import KFold
 
 from .data import get_dataset
+from .data import split_data
 import mlflow
 import mlflow.sklearn
 from sklearn.metrics import accuracy_score
 from .pipeline import create_pipeline
 from .params import find_best_params
-from .model_factory import ModelFactory
+from .ModelFactory import ModelFactory
 
 @click.command()
 @click.option(
@@ -94,11 +96,7 @@ def train(
     use_gradient_boosting_classifier:bool,
     use_random_forest_classifier:bool
     ) -> None:
-    features_train, features_val, target_train, target_val = get_dataset(
-        dataset_path,
-        random_state,
-        test_split_ratio,
-    )
+    features,target = get_dataset(dataset_path)
     models_name_array = []
     with mlflow.start_run():
         if(use_gradient_boosting_classifier):
@@ -107,8 +105,11 @@ def train(
             models_name_array.append("RandomForestClassifier")
 
         models_array = ModelFactory(models_name_array).models_array
-
-        print(models_array)
+        cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
+        for train_ix, test_ix in cv_outer.split(features):
+            features_train, features_val, target_train, target_val = split_data(features,target,train_ix, test_ix)
+            cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
+            if use_grid_search_cv:
 
         # if use_grid_search_cv:
         #     n_estimators, learning_rate, max_depth, random_state = find_best_params(features_train, target_train)
