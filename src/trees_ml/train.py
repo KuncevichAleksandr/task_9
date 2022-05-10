@@ -9,6 +9,7 @@ import mlflow.sklearn
 from sklearn.metrics import accuracy_score
 from .pipeline import create_pipeline
 from .params import find_best_params
+from .model_factory import ModelFactory
 
 @click.command()
 @click.option(
@@ -67,6 +68,18 @@ from .params import find_best_params
     type=bool,
     show_default=True,
 )
+@click.option(
+    "--use-gradient-boosting-classifier",
+    default=True,
+    type=bool,
+    show_default=True,
+)
+@click.option(
+    "--use-random-forest-classifier",
+    default=True,
+    type=bool,
+    show_default=True,
+)
 
 def train(
     dataset_path: Path,
@@ -77,28 +90,40 @@ def train(
     n_estimators: int,
     learning_rate: float,
     max_depth: int,
-    use_grid_search_cv:bool
+    use_grid_search_cv:bool,
+    use_gradient_boosting_classifier:bool,
+    use_random_forest_classifier:bool
     ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
         random_state,
         test_split_ratio,
     )
+    models_name_array = []
     with mlflow.start_run():
-        if use_grid_search_cv:
-            n_estimators, learning_rate, max_depth, random_state = find_best_params(features_train, target_train)
-        pipeline = create_pipeline(use_scaler, n_estimators, learning_rate, max_depth, random_state)
-        pipeline.fit(features_train, target_train)
-        predict_vals = pipeline.predict_proba(features_val)
-        log_loss_val = log_loss(target_val,predict_vals)
-        accuracy = accuracy_score(target_val, pipeline.predict(features_val))
-        mlflow.log_param("use_scaler", use_scaler)
-        mlflow.log_param("use_grid_search_cv", use_grid_search_cv)
-        mlflow.log_param("n_estimators", n_estimators)
-        mlflow.log_param("learning_rate", learning_rate)
-        mlflow.log_param("max_depth", max_depth)
-        mlflow.log_metric("accuracy", accuracy)
-        mlflow.log_metric("log_loss", log_loss_val)
-        click.echo(f"Accuracy: {accuracy}.")
-        dump(pipeline, save_model_path)
-        click.echo(f"Model is saved to {save_model_path}.")
+        if(use_gradient_boosting_classifier):
+            models_name_array.append("GradientBoostingClassifier")
+        if(use_random_forest_classifier):
+            models_name_array.append("RandomForestClassifier")
+
+        models_array = ModelFactory(models_name_array).models_array
+
+        print(models_array)
+
+        # if use_grid_search_cv:
+        #     n_estimators, learning_rate, max_depth, random_state = find_best_params(features_train, target_train)
+        # pipeline = create_pipeline(use_scaler, n_estimators, learning_rate, max_depth, random_state)
+        # pipeline.fit(features_train, target_train)
+        # predict_vals = pipeline.predict_proba(features_val)
+        # log_loss_val = log_loss(target_val,predict_vals)
+        # accuracy = accuracy_score(target_val, pipeline.predict(features_val))
+        # mlflow.log_param("use_scaler", use_scaler)
+        # mlflow.log_param("use_grid_search_cv", use_grid_search_cv)
+        # mlflow.log_param("n_estimators", n_estimators)
+        # mlflow.log_param("learning_rate", learning_rate)
+        # mlflow.log_param("max_depth", max_depth)
+        # mlflow.log_metric("accuracy", accuracy)
+        # mlflow.log_metric("log_loss", log_loss_val)
+        # click.echo(f"Accuracy: {accuracy}.")
+        # dump(pipeline, save_model_path)
+        # click.echo(f"Model is saved to {save_model_path}.")

@@ -6,16 +6,17 @@ from sklearn.preprocessing import StandardScaler
 import click
 
 def find_best_params(features_train, target_train):
+    click.echo(f'Начинается подбор параметров:')
     pipeline = Pipeline([
         ("scaler", StandardScaler()),
         ("classifier", GradientBoostingClassifier())
     ])
 
     params_gbc ={
-        'classifier__n_estimators': np.arange(90, 100,10),
-        'classifier__max_depth': np.arange(1, 3),
-        'classifier__learning_rate': [0.1,0.01],
-        'classifier__random_state': 42
+        'classifier__n_estimators': np.arange(400, 600,100),
+        'classifier__max_depth': np.arange(9, 11),
+        'classifier__learning_rate': [0.1],
+        'classifier__random_state': [42]
     }
 
     dtree_gscv = GridSearchCV(pipeline, params_gbc)
