@@ -100,16 +100,19 @@ def train(
     models_array = []
     with mlflow.start_run():
         if(use_gradient_boosting_classifier):
-            models_array.append(ModelFactory.buid("GradientBoostingClassifier"))
+            models_array.append(ModelFactory.buid("GradientBoostingClassifier",use_scaler))
         if(use_random_forest_classifier):
-            models_array.append(ModelFactory.buid("RandomForestClassifier"))
+            models_array.append(ModelFactory.buid("RandomForestClassifier",use_scaler))
+        if(not use_gradient_boosting_classifier and not use_random_forest_classifier):
+            click.echo(f"No model selected")
+            quit()
 
         cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
         outer_results = list()
         for train_ix, test_ix in cv_outer.split(features):
             features_train, features_val, target_train, target_val = split_data(features,target,train_ix, test_ix)
             cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
-            # if use_grid_search_cv:
+            if use_grid_search_cv:
 
             for model in models_array:
                 result = model.fit(features_train, target_train)

@@ -1,10 +1,11 @@
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestClassifier
+from .pipeline import create_pipeline
 
 class ModelFactory:
-    def buid(name,params = {"random_state":1}):
+    def buid(name,use_scaler,params = {"random_state":1}):
         if(name == "GradientBoostingClassifier"):
-            return GradientBoostingClassifier(params)
+            return create_pipeline(use_scaler,GradientBoostingClassifier(**params))
         if(name == "RandomForestClassifier"):
-            return RandomForestClassifier(params)
+            return create_pipeline(use_scaler,RandomForestClassifier(**params))
         # self.models_array.append(GradientBoostingClassifier(random_state=42))
