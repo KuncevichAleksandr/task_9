@@ -78,7 +78,7 @@ from numpy import mean
 )
 @click.option(
     "--use-random-forest-classifier",
-    default=True,
+    default=False,
     type=bool,
     show_default=True,
 )
@@ -133,20 +133,20 @@ def train(
             features_train, features_val, target_train, target_val = split_data(features,target,train_ix, test_ix)
             cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
             if use_grid_search_cv:
-                acc_results_local,log_loss_local = find_best_params(models_array,features_train, target_train,features_val,target_val,cv_inner)
+                acc_results_local = find_best_params(models_array,features_train, target_train,features_val,target_val,cv_inner)
                 for key, value in acc_results_local.items():
                     acc_results[key].append(value)
-                for key, value in log_loss_local.items():
-                    log_loss_result[key].append(value)
+                # for key, value in log_loss_local.items():
+                #     log_loss_result[key].append(value)
             else:
                 for model in models_array:
                     model = model.fit(features_train, target_train)
                     yhat = model.predict(features_val)
-                    log_loss_val = log_loss(target_val,yhat)
+                    # log_loss_val = log_loss(target_val,yhat)
                     # print(type(model["classifier"]).__name__)
                     acc = accuracy_score(target_val, yhat)
                     acc_results[type(model["classifier"]).__name__].append(acc)
-                    log_loss_result[type(model["classifier"]).__name__].append(log_loss_val)
+                    # log_loss_result[type(model["classifier"]).__name__].append(log_loss_val)
         
         for model in models_array:
             mlflow.log_param("use_scaler", use_scaler)
@@ -155,7 +155,7 @@ def train(
                 mlflow.log_param(key, value)
             mlflow.log_param("n_estimators", n_estimators)
             mlflow.log_metric("accuracy",  mean(acc_results[type(model["classifier"]).__name__]))
-            mlflow.log_metric("log_loss", mean(log_loss_result[type(model["classifier"]).__name__]))
+            # mlflow.log_metric("log_loss", mean(log_loss_result[type(model["classifier"]).__name__]))
             # click.echo(f"Accuracy: {accuracy}.")
             dump(model, save_model_path)
             click.echo(f"Model is saved to {save_model_path}.")

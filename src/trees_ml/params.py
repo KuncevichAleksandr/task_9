@@ -40,14 +40,14 @@ def find_best_params(models_array, features_train, target_train,features_val,tar
         # click.echo(f'{type(model["classifier"]).__name__} лучшие параметры:{result.best_params_}')
         model1 = result.best_estimator_
         yhat = model1.predict(features_val)
-        log_loss_val = log_loss(target_val,yhat)
+        # log_loss_val = log_loss(target_val,yhat)
         # print(type(model["classifier"]).__name__)
         acc = accuracy_score(target_val, yhat)
         outer_results[type(model["classifier"]).__name__] = acc
-        log_loss_result[type(model["classifier"]).__name__] = log_loss_val
+        # log_loss_result[type(model["classifier"]).__name__] = log_loss_val
     print(outer_results)
-    return outer_results,log_loss_result
-
+    return outer_results
+    
     # pipeline = Pipeline([
     #     ("scaler", StandardScaler()),
     #     ("classifier", GradientBoostingClassifier())
