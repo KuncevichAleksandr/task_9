@@ -5,11 +5,13 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 import click
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import log_loss
 
 
 def find_best_params(models_array, features_train, target_train,features_val,target_val, cv_inner):
     click.echo(f'Начинается подбор параметров:')
     outer_results ={}
+    log_loss_result ={}
     for model in models_array:
         if(type(model["classifier"]).__name__ == "GradientBoostingClassifier"):
             params = {
@@ -38,11 +40,13 @@ def find_best_params(models_array, features_train, target_train,features_val,tar
         # click.echo(f'{type(model["classifier"]).__name__} лучшие параметры:{result.best_params_}')
         model1 = result.best_estimator_
         yhat = model1.predict(features_val)
+        log_loss_val = log_loss(target_val,yhat)
         # print(type(model["classifier"]).__name__)
         acc = accuracy_score(target_val, yhat)
         outer_results[type(model["classifier"]).__name__] = acc
+        log_loss_result[type(model["classifier"]).__name__] = log_loss_val
     print(outer_results)
-    return outer_results
+    return outer_results,log_loss_result
 
     # pipeline = Pipeline([
     #     ("scaler", StandardScaler()),
