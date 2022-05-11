@@ -142,7 +142,6 @@ def train(
                     yhat = model.predict(features_val)
                     acc = accuracy_score(target_val, yhat)
                     acc_results[type(model["classifier"]).__name__].append(acc)
-                    # log_loss_result[type(model["classifier"]).__name__].append(log_loss_val)
         
         for model in models_array:
             mlflow.log_param("use_scaler", use_scaler)
