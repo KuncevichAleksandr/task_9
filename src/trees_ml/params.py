@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score
 
 def find_best_params(models_array, features_train, target_train,features_val,target_val, cv_inner):
     click.echo(f'Начинается подбор параметров:')
-    outer_results =[]
+    outer_results ={}
     for model in models_array:
         if(type(model["classifier"]).__name__ == "GradientBoostingClassifier"):
             params = {
@@ -35,12 +35,13 @@ def find_best_params(models_array, features_train, target_train,features_val,tar
             }
         search = GridSearchCV(model, params, scoring='accuracy', cv=cv_inner, refit=True)
         result = search.fit(features_train, target_train)
-        click.echo(f'{type(model["classifier"]).__name__} лучшие параметры:{result.best_params_}')
+        # click.echo(f'{type(model["classifier"]).__name__} лучшие параметры:{result.best_params_}')
         model1 = result.best_estimator_
         yhat = model1.predict(features_val)
         # print(type(model["classifier"]).__name__)
         acc = accuracy_score(target_val, yhat)
-        outer_results.append(acc)
+        outer_results[type(model["classifier"]).__name__] = acc
+    print(outer_results)
     return outer_results
 
     # pipeline = Pipeline([

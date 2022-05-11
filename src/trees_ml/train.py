@@ -35,12 +35,6 @@ from .ModelFactory import ModelFactory
     show_default=True,
 )
 @click.option(
-    "--test-split-ratio",
-    default=0.2,
-    type=click.FloatRange(0, 1, min_open=True, max_open=True),
-    show_default=True,
-)
-@click.option(
     "--use-scaler",
     default=True,
     type=bool,
@@ -61,6 +55,12 @@ from .ModelFactory import ModelFactory
 @click.option(
     "--max-depth",
     default=3,
+    type=int,
+    show_default=True,
+)
+@click.option(
+    "--max_features",
+    default=2,
     type=int,
     show_default=True,
 )
@@ -87,11 +87,11 @@ def train(
     dataset_path: Path,
     save_model_path: Path,
     random_state: int,
-    test_split_ratio: float,
     use_scaler: bool,
     n_estimators: int,
     learning_rate: float,
     max_depth: int,
+    max_features:int,
     use_grid_search_cv:bool,
     use_gradient_boosting_classifier:bool,
     use_random_forest_classifier:bool
@@ -100,29 +100,44 @@ def train(
     models_array = []
     with mlflow.start_run():
         if(use_gradient_boosting_classifier):
-            models_array.append(ModelFactory.buid("GradientBoostingClassifier",use_scaler))
+            params = {
+                "n_estimators":n_estimators,
+                'max_depth': max_depth,
+                'learning_rate': learning_rate,
+                'random_state': random_state
+            }
+            models_array.append(ModelFactory.buid("GradientBoostingClassifier",use_scaler,params))
         if(use_random_forest_classifier):
-            models_array.append(ModelFactory.buid("RandomForestClassifier",use_scaler))
+            params = {
+                "n_estimators":n_estimators,
+                'max_depth': max_depth,
+                'max_features': max_features,
+                'random_state': random_state
+            }
+            models_array.append(ModelFactory.buid("RandomForestClassifier",use_scaler,params))
         if(not use_gradient_boosting_classifier and not use_random_forest_classifier):
             click.echo(f"No model selected")
             quit()
             
         cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
-        outer_results = list()
+        outer_results = {
+            "GradientBoostingClassifier":[],
+            "RandomForestClassifier":[]
+        }
         for train_ix, test_ix in cv_outer.split(features):
             features_train, features_val, target_train, target_val = split_data(features,target,train_ix, test_ix)
             cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
             if use_grid_search_cv:
                 outer_results_local = find_best_params(models_array,features_train, target_train,features_val,target_val,cv_inner)
-                for acc in outer_results_local:
-                    outer_results.append(acc)
+                for key, value in outer_results_local.items():
+                    outer_results[key].append(value)
             else:
                 for model in models_array:
                     model = model.fit(features_train, target_train)
                     yhat = model.predict(features_val)
                     # print(type(model["classifier"]).__name__)
                     acc = accuracy_score(target_val, yhat)
-                    outer_results.append(acc)
+                    outer_results[type(model["classifier"]).__name__].append(acc)
 
             # for model in models_array:
             #     yhat = model.predict(features_val)
