@@ -136,8 +136,6 @@ def train(
                 acc_results_local = find_best_params(models_array,features_train, target_train,features_val,target_val,cv_inner)
                 for key, value in acc_results_local.items():
                     acc_results[key].append(value)
-                # for key, value in log_loss_local.items():
-                #     log_loss_result[key].append(value)
             else:
                 for model in models_array:
                     model = model.fit(features_train, target_train)
@@ -158,21 +156,3 @@ def train(
             # click.echo(f"Accuracy: {accuracy}.")
             dump(model, save_model_path)
             click.echo(f"Model is saved to {save_model_path}.")
-
-        # if use_grid_search_cv:
-        #     n_estimators, learning_rate, max_depth, random_state = find_best_params(features_train, target_train)
-        # pipeline = create_pipeline(use_scaler, n_estimators, learning_rate, max_depth, random_state)
-        # pipeline.fit(features_train, target_train)
-        # predict_vals = pipeline.predict_proba(features_val)
-        # log_loss_val = log_loss(target_val,predict_vals)
-        # accuracy = accuracy_score(target_val, pipeline.predict(features_val))
-        # mlflow.log_param("use_scaler", use_scaler)
-        # mlflow.log_param("use_grid_search_cv", use_grid_search_cv)
-        # mlflow.log_param("n_estimators", n_estimators)
-        # mlflow.log_param("learning_rate", learning_rate)
-        # mlflow.log_param("max_depth", max_depth)
-        # mlflow.log_metric("accuracy", accuracy)
-        # mlflow.log_metric("log_loss", log_loss_val)
-        # click.echo(f"Accuracy: {accuracy}.")
-        # dump(pipeline, save_model_path)
-        # click.echo(f"Model is saved to {save_model_path}.")
