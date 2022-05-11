@@ -153,7 +153,6 @@ def train(
             mlflow.log_param("use_grid_search_cv", use_grid_search_cv)
             for key,value in params[type(model["classifier"]).__name__].items():
                 mlflow.log_param(key, value)
-            mlflow.log_param("n_estimators", n_estimators)
             mlflow.log_metric("accuracy",  mean(acc_results[type(model["classifier"]).__name__]))
             # mlflow.log_metric("log_loss", mean(log_loss_result[type(model["classifier"]).__name__]))
             # click.echo(f"Accuracy: {accuracy}.")
