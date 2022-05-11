@@ -24,7 +24,7 @@ from numpy import mean
 @click.option(
     "-s",
     "--save-model-path",
-    default="data/model.joblib",
+    default="data/model",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
     show_default=True,
 )
@@ -99,55 +99,63 @@ def train(
     features,target = get_dataset(dataset_path)
     models_array = []
     params = {}
-    with mlflow.start_run():
-        if(use_gradient_boosting_classifier):
-            params['GradientBoostingClassifier'] = {
-                "n_estimators":n_estimators,
-                'max_depth': max_depth,
-                'learning_rate': learning_rate,
-                'random_state': random_state
-            }
-            models_array.append(ModelFactory.buid("GradientBoostingClassifier",use_scaler,params['GradientBoostingClassifier']))
-        if(use_random_forest_classifier):
-            params['RandomForestClassifier'] = {
-                "n_estimators":n_estimators,
-                'max_depth': max_depth,
-                'max_features': max_features,
-                'random_state': random_state
-            }
-            models_array.append(ModelFactory.buid("RandomForestClassifier",use_scaler,params['RandomForestClassifier']))
-        if(not use_gradient_boosting_classifier and not use_random_forest_classifier):
-            click.echo(f"No model selected")
-            quit()
-            
-        cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
-        acc_results = {
-            "GradientBoostingClassifier":[],
-            "RandomForestClassifier":[]
+    if(use_gradient_boosting_classifier):
+        params['GradientBoostingClassifier'] = {
+            "n_estimators":n_estimators,
+            'max_depth': max_depth,
+            'learning_rate': learning_rate,
+            'random_state': random_state
         }
-        log_loss_result ={
-            "GradientBoostingClassifier":[],
-            "RandomForestClassifier":[]
+        models_array.append(ModelFactory.buid("GradientBoostingClassifier",use_scaler,params['GradientBoostingClassifier']))
+    if(use_random_forest_classifier):
+        params['RandomForestClassifier'] = {
+            "n_estimators":n_estimators,
+            'max_depth': max_depth,
+            'max_features': max_features,
+            'random_state': random_state
         }
-        for train_ix, test_ix in cv_outer.split(features):
-            features_train, features_val, target_train, target_val = split_data(features,target,train_ix, test_ix)
-            cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
-            if use_grid_search_cv:
-                acc_results_local = find_best_params(models_array,features_train, target_train,features_val,target_val,cv_inner)
-                for key, value in acc_results_local.items():
-                    acc_results[key].append(value)
-            else:
-                for model in models_array:
-                    model = model.fit(features_train, target_train)
-                    yhat = model.predict(features_val)
-                    acc = accuracy_score(target_val, yhat)
-                    acc_results[type(model["classifier"]).__name__].append(acc)
+        models_array.append(ModelFactory.buid("RandomForestClassifier",use_scaler,params['RandomForestClassifier']))
+    if(not use_gradient_boosting_classifier and not use_random_forest_classifier):
+        click.echo(f"No model selected")
+        quit()
         
-        for model in models_array:
+    cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
+    acc_results = {
+        "GradientBoostingClassifier":[],
+        "RandomForestClassifier":[]
+    }
+    log_loss_result ={
+        "GradientBoostingClassifier":[],
+        "RandomForestClassifier":[]
+    }
+    for train_ix, test_ix in cv_outer.split(features):
+        features_train, features_val, target_train, target_val = split_data(features,target,train_ix, test_ix)
+        cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
+        if use_grid_search_cv:
+            acc_results_local = find_best_params(models_array,features_train, target_train,features_val,target_val,cv_inner)
+            for key, value in acc_results_local.items():
+                acc_results[key].append(value)
+            # for key, value in log_loss_local.items():
+            #     log_loss_result[key].append(value)
+        else:
+            for model in models_array:
+                model = model.fit(features_train, target_train)
+                yhat = model.predict(features_val)
+                # log_loss_val = log_loss(target_val,yhat)
+                # print(type(model["classifier"]).__name__)
+                acc = accuracy_score(target_val, yhat)
+                acc_results[type(model["classifier"]).__name__].append(acc)
+                # log_loss_result[type(model["classifier"]).__name__].append(log_loss_val)
+    
+    for model in models_array:
+        with mlflow.start_run():
             mlflow.log_param("use_scaler", use_scaler)
             mlflow.log_param("use_grid_search_cv", use_grid_search_cv)
             for key,value in params[type(model["classifier"]).__name__].items():
                 mlflow.log_param(key, value)
             mlflow.log_metric("accuracy",  mean(acc_results[type(model["classifier"]).__name__]))
+            # mlflow.log_metric("log_loss", mean(log_loss_result[type(model["classifier"]).__name__]))
+            # click.echo(f"Accuracy: {accuracy}.")
             dump(model, save_model_path)
             click.echo(f"Model is saved to {save_model_path}.")
+
