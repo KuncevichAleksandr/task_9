@@ -98,23 +98,24 @@ def train(
     ) -> None:
     features,target = get_dataset(dataset_path)
     models_array = []
+    params = {}
     with mlflow.start_run():
         if(use_gradient_boosting_classifier):
-            params = {
+            params['GradientBoostingClassifier'] = {
                 "n_estimators":n_estimators,
                 'max_depth': max_depth,
                 'learning_rate': learning_rate,
                 'random_state': random_state
             }
-            models_array.append(ModelFactory.buid("GradientBoostingClassifier",use_scaler,params))
+            models_array.append(ModelFactory.buid("GradientBoostingClassifier",use_scaler,params['GradientBoostingClassifier']))
         if(use_random_forest_classifier):
-            params = {
+            params['RandomForestClassifier'] = {
                 "n_estimators":n_estimators,
                 'max_depth': max_depth,
                 'max_features': max_features,
                 'random_state': random_state
             }
-            models_array.append(ModelFactory.buid("RandomForestClassifier",use_scaler,params))
+            models_array.append(ModelFactory.buid("RandomForestClassifier",use_scaler,params['RandomForestClassifier']))
         if(not use_gradient_boosting_classifier and not use_random_forest_classifier):
             click.echo(f"No model selected")
             quit()
@@ -138,12 +139,6 @@ def train(
                     # print(type(model["classifier"]).__name__)
                     acc = accuracy_score(target_val, yhat)
                     outer_results[type(model["classifier"]).__name__].append(acc)
-
-            # for model in models_array:
-            #     yhat = model.predict(features_val)
-            #     # print(type(model["classifier"]).__name__)
-            #     acc = accuracy_score(target_val, yhat)
-            #     outer_results.append(acc)
         print(outer_results)
 
         # if use_grid_search_cv:
