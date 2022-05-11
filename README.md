@@ -22,3 +22,6 @@ poetry run mlflow ui
 
 ## Три разных набора гиперпараметров 
 ![](https://github.com/KuncevichAleksandr/trees_ml/blob/main/three_hyperparameters.png)
+
+## Лучшие параметры для GradientBoostingClassifier, найденные с помощью GridSearchCV
+![](https://github.com/KuncevichAleksandr/trees_ml/blob/main/gbc_best_params.png)
