@@ -140,8 +140,6 @@ def train(
                 for model in models_array:
                     model = model.fit(features_train, target_train)
                     yhat = model.predict(features_val)
-                    # log_loss_val = log_loss(target_val,yhat)
-                    # print(type(model["classifier"]).__name__)
                     acc = accuracy_score(target_val, yhat)
                     acc_results[type(model["classifier"]).__name__].append(acc)
                     # log_loss_result[type(model["classifier"]).__name__].append(log_loss_val)
