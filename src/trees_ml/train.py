@@ -149,7 +149,5 @@ def train(
             for key,value in params[type(model["classifier"]).__name__].items():
                 mlflow.log_param(key, value)
             mlflow.log_metric("accuracy",  mean(acc_results[type(model["classifier"]).__name__]))
-            # mlflow.log_metric("log_loss", mean(log_loss_result[type(model["classifier"]).__name__]))
-            # click.echo(f"Accuracy: {accuracy}.")
             dump(model, save_model_path)
             click.echo(f"Model is saved to {save_model_path}.")
