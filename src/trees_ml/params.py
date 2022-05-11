@@ -4,30 +4,44 @@ import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 import click
+from sklearn.metrics import accuracy_score
 
 
-def find_best_params(models_array, features_train, target_train, cv_inner):
+def find_best_params(models_array, features_train, target_train,features_val,target_val, cv_inner):
     click.echo(f'Начинается подбор параметров:')
+    outer_results =[]
     for model in models_array:
         if(type(model["classifier"]).__name__ == "GradientBoostingClassifier"):
             params = {
-                'classifier__n_estimators': np.arange(400, 600,100),
-                'classifier__max_depth': np.arange(9, 11),
+                # 'classifier__n_estimators': np.arange(400, 600,100),
+                # 'classifier__max_depth': np.arange(9, 11),
+                # 'classifier__learning_rate': [0.1],
+                # 'classifier__random_state': [42]
+                'classifier__n_estimators': [400],
+                'classifier__max_depth': [3],
                 'classifier__learning_rate': [0.1],
-                'classifier__random_state': [42]
+                'classifier__random_state': [1]
             }
         if(type(model["classifier"]).__name__ == "RandomForestClassifier"):
             params = {
-                'classifier__n_estimators': np.arange(400, 600,100),
-                'classifier__max_features': [2, 4, 6],
-                'classifier__max_depth': np.arange(9, 11),
-                'classifier__random_state': [42]
+                # 'classifier__n_estimators': np.arange(400, 600,100),
+                # 'classifier__max_features': [2, 4, 6],
+                # 'classifier__max_depth': np.arange(9, 11),
+                # 'classifier__random_state': [42]
+                'classifier__n_estimators': [400],
+                'classifier__max_features': [2],
+                'classifier__max_depth': [3],
+                'classifier__random_state': [1]
             }
-        model = GridSearchCV(model, params, scoring='accuracy', cv=cv_inner, refit=True)
-        result = model.fit(features_train, target_train)
+        search = GridSearchCV(model, params, scoring='accuracy', cv=cv_inner, refit=True)
+        result = search.fit(features_train, target_train)
         click.echo(f'{type(model["classifier"]).__name__} лучшие параметры:{result.best_params_}')
-        model = result.best_estimator_
-    return models_array
+        model1 = result.best_estimator_
+        yhat = model1.predict(features_val)
+        # print(type(model["classifier"]).__name__)
+        acc = accuracy_score(target_val, yhat)
+        outer_results.append(acc)
+    return outer_results
 
     # pipeline = Pipeline([
     #     ("scaler", StandardScaler()),
